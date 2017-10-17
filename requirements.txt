@@ -1,2 +1,1 @@
 djangorestframework
-django-oauth-toolkit
