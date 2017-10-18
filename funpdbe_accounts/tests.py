@@ -32,6 +32,7 @@ class UrlTests(TestCase):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 302)
 
+
 class LoginViewTests(TestCase):
 
     def setUp(self):
@@ -47,10 +48,20 @@ class LoginViewTests(TestCase):
     def test_if_existing_user_can_log_in(self):
         user = User.objects.create_user('test', 'test@test.test', 'test')
         self.assertTrue(self.client.login(username='test', password='test'))
+        user.delete()
 
     def test_if_not_existing_user_cannot_log_in(self):
         self.assertFalse(self.client.login(username="foo", password="bar"))
 
+    def test_if_correct_login_redirects(self):
+        user = User.objects.create_user('test', 'test@test.test', 'test')
+        login = self.client.post(reverse("login"), {"username": "test", "password": "test"})
+        self.assertEqual(login.status_code, 302)
+        user.delete()
+
+    def test_if_incorrect_login_reloads_login(self):
+        login = self.client.post(reverse("login"), {"username": "foo", "password": "bar"})
+        self.assertEqual(login.status_code, 200)
 
 class ViewTests(TestCase):
 
