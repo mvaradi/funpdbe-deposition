@@ -1,39 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
+{% include "header.html" %}
 
-{% if next %}
-    {% if user.is_authenticated %}
-    <p>Your account doesn't have access to this page. To proceed,
-    please login with an account that has access.</p>
-    {% else %}
-    <p>Please login to see this page.</p>
-    {% endif %}
-{% endif %}
+<div id="content">
+    <div data-sticky-container>
+        <header id="masthead" class="masthead" data-sticky data-sticky-on="large" data-top-anchor="main-content-area:top" data-btm-anchor="main-content-area:bottom">
+            <div class="masthead-inner container">
+                <div class="columns medium-12" id="local-title">
+                    <h1><a href="../" title="Back to [service-name] homepage">FunPDBe User Login</a></h1>
+                </div>
+                <nav>
+                    <ul id="local-nav" class="dropdown menu float-left" data-description="navigational">
+                        <li><a href="../">Overview</a></li>
+                        <li><a data-open="modal-download">Download</a></li>
+                        <li><a href="#">Support <i class="icon icon-generic" data-icon="x"></i></a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+    </div>
+    <!-- Suggested layout containers -->
+    <section id="main-content-area" class="container" role="main">
+        <!-- Your menu structure should make a breadcrumb redundant, but if a breadcrump is needed uncomment the below -->
+        <nav aria-label="You are here:" role="navigation">
+            <ul class="breadcrumbs columns">
+                <li><a href="">FunPDBe</a></li>
+                <li>
+                    <span class="show-for-sr">Current: </span> Login
+                </li>
+            </ul>
+        </nav>
 
-<form method="post" action="{% url 'login' %}">
-{% csrf_token %}
-<table>
-<tr>
-    <td>{{ form.username.label_tag }}</td>
-    <td>{{ form.username }}</td>
-</tr>
-<tr>
-    <td>{{ form.password.label_tag }}</td>
-    <td>{{ form.password }}</td>
-</tr>
-</table>
+        <div class="container">
+            <div>
+                {% if form.errors %}
+                <p>Your username and password didn't match. Please try again.</p>
+                {% endif %}
 
-<input type="submit" value="login" />
-<input type="hidden" name="next" value="{{ next }}" />
-</form>
+                {% if next %}
+                {% if user.is_authenticated %}
+                <p>Your account doesn't have access to this page. To proceed,
+                    please login with an account that has access.</p>
+                {% else %}
+                <p>Please login to see this page.</p>
+                {% endif %}
+                {% endif %}
 
-</body>
-</html>
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <table>
+                        <tr>
+                            <td>{{ form.username.label_tag }}</td>
+                            <td>{{ form.username }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ form.password.label_tag }}</td>
+                            <td>{{ form.password }}</td>
+                        </tr>
+                    </table>
+
+                    <input type="submit" value="login" />
+                    <input type="hidden" name="next" value="{{ next }}" />
+                </form>
+            </div>
+        </div>
+
+    </section>
+</div>
+
+{% include "footer.html" %}
