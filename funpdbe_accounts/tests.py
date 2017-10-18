@@ -32,6 +32,25 @@ class UrlTests(TestCase):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 302)
 
+class LoginViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.response = self.client.get(reverse("login"))
+
+    def test_if_login_has_correct_templates(self):
+        self.assertEqual(self.response.template_name, ['login.html'])
+
+    def test_if_login_is_rendered(self):
+        self.assertTrue(self.response.is_rendered)
+
+    def test_if_existing_user_can_log_in(self):
+        user = User.objects.create_user('test', 'test@test.test', 'test')
+        self.assertTrue(self.client.login(username='test', password='test'))
+
+    def test_if_not_existing_user_cannot_log_in(self):
+        self.assertFalse(self.client.login(username="foo", password="bar"))
+
 
 class ViewTests(TestCase):
 
@@ -48,4 +67,3 @@ class ViewTests(TestCase):
         self.client.login(username='test', password='test')
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
-
