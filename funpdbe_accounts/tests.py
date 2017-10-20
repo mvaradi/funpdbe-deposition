@@ -63,6 +63,29 @@ class LoginViewTests(TestCase):
         login = self.client.post(reverse("login"), {"username": "foo", "password": "bar"})
         self.assertEqual(login.status_code, 200)
 
+
+class RegisterViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.response = self.client.get(reverse("register"))
+
+    def test_if_reloads_if_bad_data_is_posted(self):
+        register = self.client.post(reverse("register"), {"foo":"bar"})
+        self.assertEqual(register.status_code, 200)
+
+    def test_if_redirects_if_valid_data_is_posted(self):
+        register = self.client.post(reverse("register"), {
+            "username": "test",
+            "first_name": "test",
+            "last_name": "test",
+            "email": "test@test.hu",
+            "password1": "asdasd42",
+            "password2": "asdasd42"
+        })
+        self.assertEqual(register.status_code, 302)
+
+
 class ViewTests(TestCase):
 
     def setUp(self):
