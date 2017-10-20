@@ -1,14 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<form method="post" action="">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Create new user account" />
-</form>
-</body>
-</html>
+{% include "header.html" %}
+<div id="content">
+    {% include "masthead.html" %}
+    <section id="main-content-area" class="container" role="main">
+
+        <nav aria-label="You are here:" role="navigation">
+            <ul class="breadcrumbs columns">
+                <li>FunPDBe</li>
+                <li>
+                    <span class="show-for-sr">Current: </span> Register
+                </li>
+            </ul>
+        </nav>
+
+        <div class="container">
+            <div>
+                <form method="post" action="">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <br>
+                    <input class="btn btn-info" type="submit" value="Create new user account" />
+                </form>
+            </div>
+        </div>
+
+    </section>
+</div>
+{% include "footer.html" %}
