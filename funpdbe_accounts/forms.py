@@ -5,7 +5,6 @@ from django.contrib.auth.forms import UserCreationForm
 
 class UserCreateForm(UserCreationForm):
     email = forms.EmailField(required=True)
-    groups = Group
 
     class Meta:
         model = User
@@ -16,8 +15,6 @@ class UserCreateForm(UserCreationForm):
             "email",
             "password1",
             "password2",
-            "groups"
-
         )
 
     def save(self, commit=True):
@@ -27,9 +24,6 @@ class UserCreateForm(UserCreationForm):
         user.last_name = self.cleaned_data["last_name"]
         user.is_active = True
         if commit:
-            # Needs to save before group(s) can be added
-            user.save()
-            user.groups.set(self.cleaned_data["groups"])
             user.save()
 
         return user
