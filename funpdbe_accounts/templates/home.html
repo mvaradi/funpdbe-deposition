@@ -15,14 +15,19 @@
         </nav>
 
         <div class="container">
-            <h2>Welcome, {{ account.user_name }} to your FunPDBe account</h2>
+            <div class="row">
+                <h2>
+                    Welcome, {{ account.user_name }} to your FunPDBe account
+                </h2>
+            </div>
 
-            <div id="group-div">
+
+            <div id="current-groups" class="row">
                 {% if account.user_groups%}
                     <h3>You are registered for the following resources:</h3>
                     <ul>
                     {% for resource in account.user_groups %}
-                        <li>{{ resource.name }}</li>
+                        <li>{{ resource }}</li>
                     {% endfor%}
                     </ul>
                 {% else %}
@@ -30,19 +35,15 @@
                 {% endif %}
             </div>
 
-            <div id="account-status">
-                <h6>
-                    {% if account.user_active %}
-                        <span class="alert alert-success">
-                            This account is active
-                        </span>
-                    {% else %}
-                        <span class="alert alert-warning">
-                            This account is inactive
-                        </span>
-                    {% endif %}
-                </h6>
+            <div id="additional-groups" class="row">
+                <h3>Please select all resources you would like to contribute to:</h3>
+                {% for partner in available_partners %}
+                    {{ partner }}
+                {% endfor %}
             </div>
+
+
+
 
 
         </div>
