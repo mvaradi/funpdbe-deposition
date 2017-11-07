@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect
 from .forms import UserCreateForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
+from django.contrib.auth.models import Group
 
 
 def register(request):
@@ -18,7 +19,15 @@ def register(request):
 
 @login_required
 def home(request):
-    return render(request, 'home.html')
+    print(request.user.groups)
+    groups = Group.objects.select_related().all()
+    relevant_groups = groups.filter(user__username__contains=request.user.username)
+    account_details = {
+        "user_name" : request.user.username,
+        "user_groups" : relevant_groups,
+        "user_active" : request.user.is_active
+    }
+    return render(request, 'home.html', {'account': account_details})
 
 
 def logout_view(request):

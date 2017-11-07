@@ -1,11 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title will be here</title>
-</head>
-<body>
-    <p>You can only see this, because you're logged in</p>
-    <p>Click <a href="{% url 'logout' %}">here</a> to log out</p>
-</body>
-</html>
+{% include "header.html" %}
+
+<div id="content">
+    {% include "masthead.html" %}
+    <section id="main-content-area" class="container" role="main">
+        <nav aria-label="You are here:" role="navigation">
+            <ul class="breadcrumbs columns">
+                <li>FunPDBe</li>
+                <li>
+                    <span class="show-for-sr">Current: </span> Account details
+                </li>
+            </ul>
+        </nav>
+
+        <div class="container">
+            <h2>Welcome, {{ account.user_name }} to your FunPDBe account</h2>
+
+            <h3>You are registered for the following resources:</h3>
+
+            <ul>
+            {% for resource in account.user_groups %}
+                <li>{{ resource.name }}</li>
+            {% endfor%}
+            </ul>
+
+            <h6>
+                {% if account.user_active %}
+                    <span class="alert alert-success">
+                        This account is active
+                    </span>
+                {% else %}
+                    <span class="alert alert-warning">
+                        This account is inactive
+                    </span>
+                {% endif %}
+            </h6>
+
+        </div>
+
+    </section>
+</div>
+
+{% include "footer.html" %}
