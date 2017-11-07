@@ -18,12 +18,16 @@
             <h2>Welcome, {{ account.user_name }} to your FunPDBe account</h2>
 
             <div id="group-div">
-                <h3>You are registered for the following resources:</h3>
-                <ul>
-                {% for resource in account.user_groups %}
-                    <li>{{ resource.name }}</li>
-                {% endfor%}
-                </ul>
+                {% if account.user_groups%}
+                    <h3>You are registered for the following resources:</h3>
+                    <ul>
+                    {% for resource in account.user_groups %}
+                        <li>{{ resource.name }}</li>
+                    {% endfor%}
+                    </ul>
+                {% else %}
+                    <h3>You are not yet registered for any resource</h3>
+                {% endif %}
             </div>
 
             <div id="account-status">
