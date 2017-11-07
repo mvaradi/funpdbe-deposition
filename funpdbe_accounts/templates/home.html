@@ -1,5 +1,7 @@
 {% include "header.html" %}
 
+<link rel="stylesheet" href="/static/css/home.css" type="text/css" media="all" />
+
 <div id="content">
     {% include "masthead.html" %}
     <section id="main-content-area" class="container" role="main">
@@ -15,25 +17,29 @@
         <div class="container">
             <h2>Welcome, {{ account.user_name }} to your FunPDBe account</h2>
 
-            <h3>You are registered for the following resources:</h3>
+            <div id="group-div">
+                <h3>You are registered for the following resources:</h3>
+                <ul>
+                {% for resource in account.user_groups %}
+                    <li>{{ resource.name }}</li>
+                {% endfor%}
+                </ul>
+            </div>
 
-            <ul>
-            {% for resource in account.user_groups %}
-                <li>{{ resource.name }}</li>
-            {% endfor%}
-            </ul>
+            <div id="account-status">
+                <h6>
+                    {% if account.user_active %}
+                        <span class="alert alert-success">
+                            This account is active
+                        </span>
+                    {% else %}
+                        <span class="alert alert-warning">
+                            This account is inactive
+                        </span>
+                    {% endif %}
+                </h6>
+            </div>
 
-            <h6>
-                {% if account.user_active %}
-                    <span class="alert alert-success">
-                        This account is active
-                    </span>
-                {% else %}
-                    <span class="alert alert-warning">
-                        This account is inactive
-                    </span>
-                {% endif %}
-            </h6>
 
         </div>
 
