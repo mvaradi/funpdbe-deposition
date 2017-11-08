@@ -36,3 +36,6 @@ class PartnerRequestedByUser(models.Model):
                                  verbose_name="User requesting access to partner resource")
     partner_ref = models.ForeignKey(RequestedPartner,
                                     verbose_name="Requested partner resource")
+
+    def __str__(self):
+        return "%s requests %s" % (self.user_ref.username, self.partner_ref.partner_name)
