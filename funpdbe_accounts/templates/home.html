@@ -59,20 +59,29 @@
             </div>
 
             <div id="additional-groups" class="row">
-                <h3>Please select all resources you would like to contribute to:</h3>
-                <form action="{% url 'home' %}" method="post" class="form">
-                    {% for partner in user_request %}
-                        <div class="form-check">
-                            <label class="form-check-label">
-                            <input class="form-check-input" type="checkbox" value="{{partner}}">
-                            {{partner}}
-                            </label>
-                        </div>
-                    {% endfor %}
-                    <input type="submit" value="Submit">
-                </form>
+                {% if user_request %}
+                    <h3>Please select all resources you would like to contribute to:</h3>
+                    <form action="{% url 'home' %}" method="post" class="form">
+                        {% csrf_token %}
+                        {% for partner in user_request %}
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                <input class="form-check-input" type="checkbox" name="{{partner}}" value="{{partner}}">
+                                {{partner}}
+                                </label>
+                            </div>
+                        {% endfor %}
+                        <input type="submit" value="Submit" class="btn btn-default">
+                    </form>
+                {% endif %}
+            </div>
+
+            <div id="new-groups" class="row">
                 <h4>Additional resources</h4>
-                <p>If you would like to suggest additional resources, please get in touch with an administrator</p>
+                <p>
+                    If you would like to suggest additional resources, please get in touch with an
+                    <a href="mailto:mvaradi@ebi.ac.uk">administrator <i class="icon icon-generic" data-icon="E"></i></a>
+                </p>
             </div>
 
 
