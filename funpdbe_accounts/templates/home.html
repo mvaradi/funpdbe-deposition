@@ -17,29 +17,62 @@
         <div class="container">
             <div class="row">
                 <h2>
-                    Welcome, {{ account.user_name }} to your FunPDBe account
+                    Welcome, {{ user_name }} to your FunPDBe account
                 </h2>
             </div>
 
 
             <div id="current-groups" class="row">
-                {% if account.user_groups%}
+                {% if user_groups%}
                     <h3>You are registered for the following resources:</h3>
                     <ul>
-                    {% for resource in account.user_groups %}
+                    {% for resource in user_groups %}
                         <li>{{ resource }}</li>
                     {% endfor%}
                     </ul>
+                    <p class="well">
+                        <i class="icon icon-generic" data-icon="i"></i>
+                        These are the resources you have permission to submit to or view. If you would like to request access
+                        to additional resources, please indicate it below at the corresponding section.
+                    </p>
                 {% else %}
-                    <h3>You are not yet registered for any resource</h3>
+                    <h3>
+                        <i class="icon icon-generic" data-icon="l"></i>
+                        You are not yet registered for any resource
+                    </h3>
+                {% endif %}
+            </div>
+
+            <div id="pending-groups" class="row">
+                {% if user_pending %}
+                    <h3>You have requested access to the following resources:</h3>
+                    <ul>
+                        {% for pending in user_pending %}
+                        <li>{{pending}}</li>
+                        {% endfor %}
+                    </ul>
+                    <p class="well">
+                        <i class="icon icon-generic" data-icon="l"></i>
+                        Please be advised that access permissions are granted after a manual review process
+                    </p>
                 {% endif %}
             </div>
 
             <div id="additional-groups" class="row">
                 <h3>Please select all resources you would like to contribute to:</h3>
-                {% for partner in available_partners %}
-                    {{ partner }}
-                {% endfor %}
+                <form action="{% url 'home' %}" method="post" class="form">
+                    {% for partner in user_request %}
+                        <div class="form-check">
+                            <label class="form-check-label">
+                            <input class="form-check-input" type="checkbox" value="{{partner}}">
+                            {{partner}}
+                            </label>
+                        </div>
+                    {% endfor %}
+                    <input type="submit" value="Submit">
+                </form>
+                <h4>Additional resources</h4>
+                <p>If you would like to suggest additional resources, please get in touch with an administrator</p>
             </div>
 
 
