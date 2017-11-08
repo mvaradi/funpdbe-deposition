@@ -7,11 +7,12 @@ from django.contrib.auth.models import Group
 from .models import RequestedPartner
 from .models import PartnerRequestedByUser
 
+
 def register(request):
     if request.method == "POST":
         form = UserCreateForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            form.save()
             return HttpResponseRedirect('home')
     else:
         form = UserCreateForm()
@@ -57,10 +58,21 @@ def home(request):
     if request.POST:
         for key in request.POST.keys():
             if key != "csrfmiddlewaretoken":
-                if key not in pending_requests:
+                if key == "remove-pending":
+                    partner_name = request.POST.get(key)
+                    all_requests = PartnerRequestedByUser.objects.all()
+                    all_user_requests = all_requests.filter(user_ref__username__contains=request.user.username)
+                    request_to_remove = all_user_requests.filter(partner_ref__partner_name__contains=partner_name)
+                    request_to_remove.delete()
+                    updated_pending_list = []
+                    for i in range(len(pending_requests)):
+                        if pending_requests[i] != partner_name:
+                            updated_pending_list.append(pending_requests[i])
+                    pending_requests = updated_pending_list
+                elif key not in pending_requests:
                     partner_resource = RequestedPartner.objects.get(pk=key)
-                    new_user_request = PartnerRequestedByUser(user_ref = request.user,
-                                                              partner_ref = partner_resource)
+                    new_user_request = PartnerRequestedByUser(user_ref=request.user,
+                                                              partner_ref=partner_resource)
                     new_user_request.save()
                     pending_requests.append(key)
 
@@ -73,8 +85,6 @@ def home(request):
     relevant_groups = groups.filter(user__username__contains=request.user.username)
     for group in relevant_groups:
         contributing_to.append(group.name)
-
-
 
     """
     List of registered partner groups in RequestedPartner() objects. These 
@@ -91,10 +101,9 @@ def home(request):
                 if partner.partner_name not in pending_requests:
                     user_requests.append(partner.partner_name)
 
-
     context = {
-        "user_name" : request.user.username,
-        "user_groups" : contributing_to,
+        "user_name": request.user.username,
+        "user_groups": contributing_to,
         "user_pending": pending_requests,
         "user_request": user_requests
     }
