@@ -35,6 +35,36 @@ def home(request):
     """
 
     """
+    List of resources associated with a user in PartnerRequestedByUser(),
+    but only those for which the corresponding Group() was not yet linked
+
+    In other terms, this is a list of resources to which the user already
+    requested permissions, but has not yet been granted by the admin
+    """
+    pending_requests = []
+    requested = PartnerRequestedByUser.objects.select_related().all()
+    relevant_requests = requested.filter(user_ref__username__contains=request.user.username)
+    for relevant_request in relevant_requests:
+        pending_requests.append(relevant_request.partner_ref.partner_name)
+
+    """
+    If the user is POSTing requests for new resources to be added to the
+    pending list, first check if the resource is already on the list
+    
+    This should not happen under normal circumstances, but repeated POSTing
+    due to refreshing, etc. can do this
+    """
+    if request.POST:
+        for key in request.POST.keys():
+            if key != "csrfmiddlewaretoken":
+                if key not in pending_requests:
+                    partner_resource = RequestedPartner.objects.get(pk=key)
+                    new_user_request = PartnerRequestedByUser(user_ref = request.user,
+                                                              partner_ref = partner_resource)
+                    new_user_request.save()
+                    pending_requests.append(key)
+
+    """
     List of partner groups that are Group() objects with certain
     permissions
     """
@@ -44,18 +74,7 @@ def home(request):
     for group in relevant_groups:
         contributing_to.append(group.name)
 
-    """
-    List of resources associated with a user in PartnerRequestedByUser(),
-    but only those for which the corresponding Group() was not yet linked
-    
-    In other terms, this is a list of resources to which the user already
-    requested permissions, but has not yet been granted by the admin
-    """
-    pending_requests = []
-    requested = PartnerRequestedByUser.objects.select_related().all()
-    relevant_requests = requested.filter(user_ref__username__contains=request.user.username)
-    for relevant_request in relevant_requests:
-        pending_requests.append(relevant_request.partner_ref.partner_name)
+
 
     """
     List of registered partner groups in RequestedPartner() objects. These 
