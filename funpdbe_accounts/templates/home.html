@@ -25,11 +25,13 @@
             <div id="current-groups" class="row">
                 {% if user_groups%}
                     <h3>You are registered for the following resources:</h3>
-                    <ul>
-                    {% for resource in user_groups %}
-                        <li>{{ resource }}</li>
-                    {% endfor%}
-                    </ul>
+                    <table class="table table-hover">
+                        {% for resource in user_groups %}
+                        <tr>
+                            <td>{{ resource }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
                     <p class="well">
                         <i class="icon icon-generic" data-icon="i"></i>
                         These are the resources you have permission to submit to or view. If you would like to request access
@@ -46,11 +48,21 @@
             <div id="pending-groups" class="row">
                 {% if user_pending %}
                     <h3>You have requested access to the following resources:</h3>
-                    <ul>
-                        {% for pending in user_pending %}
-                        <li>{{pending}}</li>
-                        {% endfor %}
-                    </ul>
+                    <form method="post" action="{% url 'home' %}">
+                        {% csrf_token %}
+                        <table class="table table-hover">
+                            {% for pending in user_pending %}
+                            <tr>
+                                <td>{{ pending }}</td>
+                                <td>
+                                    <button class="btn btn-default" type="submit" name="remove-pending" value="{{pending}}">
+                                        <i class="icon icon-functional" data-icon="d"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </form>
                     <p class="well">
                         <i class="icon icon-generic" data-icon="l"></i>
                         Please be advised that access permissions are granted after a manual review process
