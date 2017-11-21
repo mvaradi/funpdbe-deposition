@@ -59,10 +59,31 @@ def home(request):
     This should not happen under normal circumstances, but repeated POSTing
     due to refreshing, etc. can do this
     """
+    resource_registration_keys = [
+        "resource_name",
+        "resource_url",
+        "resource_description",
+        "resource_owner",
+        "owner_email",
+        "is_active_partner"]
     if request.POST:
         for key in request.POST.keys():
             if key != "csrfmiddlewaretoken":
-                if key == "remove-pending":
+                if key in resource_registration_keys:
+                    new_resource_name = request.POST.get("resource_name")
+                    new_resource_owner = request.POST.get("resource_owner")
+                    new_resource_address = request.POST.get("owner_email")
+                    new_resource_url = request.POST.get("resource_url")
+                    new_resource_description = request.POST.get("resource_description")
+                    new_resource = RequestedPartner(partner_name=new_resource_name,
+                                                    partner_owner=new_resource_owner,
+                                                    partner_contact=new_resource_address,
+                                                    partner_description=new_resource_description,
+                                                    partner_url=new_resource_url,
+                                                    is_active_partner=False)
+                    new_resource.save()
+
+                elif key == "remove-pending":
                     partner_name = request.POST.get(key)
                     all_requests = PartnerRequestedByUser.objects.all()
                     all_user_requests = all_requests.filter(user_ref__username__contains=request.user.username)
