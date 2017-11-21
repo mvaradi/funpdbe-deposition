@@ -18,6 +18,10 @@ class RequestedPartner(models.Model):
                                      max_length=255)
     partner_contact = models.EmailField("Contact email address",
                                         max_length=255)
+    partner_url = models.URLField("URL of the resource",
+                                  null=True)
+    partner_description = models.TextField("Description of the resource",
+                                           null=True)
     work_package = models.IntegerField("Work package",
                                        null=True)
     is_active_partner = models.BooleanField("Actively participating resource",
