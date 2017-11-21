@@ -96,8 +96,45 @@
                 <h4>Additional resources</h4>
                 <p>
                     If you would like to suggest additional resources, please get in touch with an
-                    <a href="mailto:mvaradi@ebi.ac.uk">administrator <i class="icon icon-generic" data-icon="E"></i></a>
+                    <a href="mailto:mvaradi@ebi.ac.uk">administrator <i class="icon icon-generic" data-icon="E"></i></a> or
+                    use the form below:
                 </p>
+                <p class="well">
+                        <i class="icon icon-generic" data-icon="l"></i>
+                        Please be advised that newly registered resources first have to be approved by an admin
+                    </p>
+                <form action="{% url 'home' %}" method="post" class="form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label" for="resource_name">Name of the resource</label>
+                        <input class="form-control" id="resource_name" type="text" name="resource_name" placeholder="Please provide the name of the resource" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Resource URL</label>
+                        <input class="form-control" type="url" placeholder="Please provide the URL of the resource" name="resource_url" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Resource owner</label>
+                        <input class="form-control" type="text" placeholder="Please type in the owner of the resource" name="resource_owner" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email address of owner</label>
+                        <input class="form-control" type="email" name="owner_email" placeholder="Please provide the email address of the owner" required>
+                        <small id="emailHelp" class="form-text text-muted">We'll never share this email with anyone else.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Brief description</label>
+                        <textarea class="form-control" placeholder="Please describe this resource briefly" name="resource_description" required></textarea>
+                    </div>
+
+                    <input type="submit" value="Submit" class="btn btn-default">
+                </form>
+                <br>
+                <br>
             </div>
 
 
