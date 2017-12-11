@@ -20,7 +20,17 @@ def register(request):
 
 
 def about(request):
-    return render(request, 'about.html')
+    groups = RequestedPartner.objects.all()
+    context = []
+    for group in groups:
+        group_info = {
+            "name": group,
+            "owner": groups.get(pk=group).partner_owner,
+            "description": groups.get(pk=group).partner_description,
+            "url": groups.get(pk=group).partner_url
+        }
+        context.append(group_info)
+    return render(request, 'about.html', {'group_info': context})
 
 
 @login_required
