@@ -2,41 +2,47 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.contrib.auth.models import Group
 
 
 class EvidenceCodeOntology(models.Model):
+    """
+    Evidence Code Ontology terms
 
+    Terms are a subset of https://www.ebi.ac.uk/ols/ontologies/eco
+    with focus on terms that are relevant to FunPDBe annotations
+    """
     evidence_code_ontology = models.CharField("Evidence Code Ontology term",
                                               primary_key=True,
-                                              max_length=255,
-                                              null=False)
+                                              max_length=255)
+#     NOTE TO SELF: This will be a controlled dictionary
 
 
 class DataResource(models.Model):
-
-    data_resource = models.CharField("Data resource name",
-                                     primary_key=True,
-                                     max_length=255,
-                                     null=False)
-#     NOTE TO SELF: This should probably be controlled by the Group class from funpdbe_accounts
+    """
+    Data resources defined in Groups()
+    """
+    data_resource = models.ForeignKey(Group,
+                                      verbose_name="Related group class")
 
 
 class Classification(models.Model):
-
+    """
+    Classification terms
+    """
     classification = models.CharField("Classification of the data",
                                       primary_key=True,
-                                      max_length=200,
-                                      null=False)
-
-#     NOTE TO SELF: This should be a limited enumeration
+                                      max_length=200)
+#     NOTE TO SELF: This should be a limited enumeration, once we know what the vocabulary is
 
 
 class Label(models.Model):
-
+    """
+    Labels for sites
+    """
     label = models.CharField("Site label",
                              primary_key=True,
-                             max_length=255,
-                             null=False)
+                             max_length=255)
 
 
 class SourceDataset(models.Model):
@@ -86,6 +92,15 @@ class Entry(models.Model):
                               max_length = 10)
 
 
+class EvidenceCodeOntologyOfEntry(models.Model):
+
+    evidence_code_ontology_ref = models.ForeignKey(EvidenceCodeOntology,
+                                                   verbose_name="Related ECO")
+
+    entry_ref = models.ForeignKey(Entry,
+                                  verbose_name="Related entry")
+
+
 class Chain(models.Model):
 
     entry_ref = models.ForeignKey(Entry,
@@ -113,13 +128,16 @@ class Residue(models.Model):
 class SiteData(models.Model):
 
     residue_ref = models.ForeignKey(Residue,
-                                    verbose_name="Residue this site data relates to")
+                                    verbose_name="Residue this site data relates to",
+                                    null=False)
 
     site_ref = models.ForeignKey(Site,
-                                 verbose_name="Site of this site data")
+                                 verbose_name="Site of this site data",
+                                 null=False)
 
     classification_ref = models.ForeignKey(Classification,
-                                           verbose_name="Classification of this site data")
+                                           verbose_name="Classification of this site data",
+                                           null=True)
 
     value = models.FloatField("Value",
                               null=False)
