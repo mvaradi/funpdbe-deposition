@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'funpdbe_accounts',
-    'funpdbe_data'
+    'rest_framework',
+    'funpdbe_deposition'
 ]
 
 MIDDLEWARE = [
@@ -124,5 +124,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LOGIN_REDIRECT_URL = 'home'
-LOGIN_URL = 'login'
+# LOGIN_REDIRECT_URL = 'home'
+# LOGIN_URL = 'login'
