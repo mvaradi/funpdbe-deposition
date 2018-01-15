@@ -18,5 +18,5 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'funpdbe_accounts/', include('funpdbe_accounts.urls'))
+    url(r'funpdbe_deposition/', include('funpdbe_deposition.urls'))
 ]
