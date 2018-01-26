@@ -51,6 +51,9 @@ class Entry(models.Model):
                                     max_length=10,
                                     null=True)
 
+    class Meta:
+        unique_together = ("pdb_id", "data_resource")
+
 
 class Chain(models.Model):
     """
