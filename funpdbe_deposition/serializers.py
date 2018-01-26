@@ -58,7 +58,7 @@ class EntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Entry
-        fields = ('pdb_id', 'data_resource', 'resource_version', 'software_version',
+        fields = ('pk', 'pdb_id', 'data_resource', 'resource_version', 'software_version',
                   'resource_entry_url', 'release_date', 'chains', 'sites',
                   'evidence_code_ontology', 'owner')
 
