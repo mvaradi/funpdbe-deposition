@@ -59,6 +59,24 @@ class EntryDetail(APIView):
         serializer = EntrySerializer(entries, many=True)
         return Response(serializer.data)
 
+    def delete(self, request, pdb_id):
+        user = request.user
+        entries = Entry.objects.filter(pdb_id=pdb_id)
+        if entries:
+            for entry in entries:
+                if entry.owner == user:
+                    entry.delete()
+                    return Response("Deleted entry of %s with PDB id %s" % (
+                        user,
+                        pdb_id), status=status.HTTP_200_OK)
+                else:
+                    return Response("User %s has not entry with PDB id %s" % (
+                        user,
+                        pdb_id
+                    ), status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response("Entry not found", status=status.HTTP_404_NOT_FOUND)
+
 
 class EntryDetailByResource(APIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
