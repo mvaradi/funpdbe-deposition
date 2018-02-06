@@ -3,24 +3,24 @@ from django.contrib.auth.models import User
 
 RESOURCES = (
     ("funsites", "funsites"),
-    ("nod", "nod")
-)
-
-LABELS = (
-    ("ligand_binding_site", "ligand binding site"),
-    ("active_site", "active site")
+    ("nod", "nod"),
+    ("3dligandsite", "3dligandsite"),
+    ("cansar", "cansar"),
+    ("credo", "credo"),
+    ("popscomp", "popscomp"),
+    ("14-3-3-pred", "14-3-3-pred"),
+    ("dynamine", "dynamine")
 )
 SOURCE_DATABASE = (
     ("pdb", "pdb"),
     ("uniprot" ,"uniprot")
 )
 CLASSIFICATION = (
-    ("reliable", "reliable"),
-    ("low_confidence" ,"low confidence")
+    ("low", "low"),
+    ("medium" ,"medium"),
+    ("high" ,"high"),
+    ("null", "null")
 )
-
-# TO DO: Creating ECO term tuple
-# WHATEVER
 
 class Entry(models.Model):
     """
@@ -99,13 +99,13 @@ class SiteData(models.Model):
 
     site_id_ref = models.IntegerField("Site JSON reference identifier")
 
-    value = models.FloatField("Value",
+    raw_score = models.FloatField("Value",
                               null=True)
 
-    confidence = models.FloatField("Confidence in the value",
+    confidence_score = models.FloatField("Confidence in the value",
                                    null=True)
 
-    classification = models.CharField("Classification of the value",
+    confidence_classification = models.CharField("Classification of the value",
                                       choices=CLASSIFICATION,
                                       max_length=100,
                                       null=True)
@@ -123,7 +123,6 @@ class Site(models.Model):
                                   on_delete=models.CASCADE)
 
     label = models.CharField("Site label",
-                             choices=LABELS,
                              max_length=255)
 
     source_database = models.CharField("Source database",
@@ -147,4 +146,8 @@ class EvidenceCodeOntology(models.Model):
                                   related_name="evidence_code_ontology",
                                   on_delete=models.CASCADE)
     eco_term = models.CharField("Evidence Code Ontology term",
-                                max_length=255)
+                                max_length=255,
+                                null=True)
+    eco_code = models.CharField("Evidence Code Ontology code",
+                                max_length=255,
+                                null=True)
