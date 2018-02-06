@@ -34,10 +34,6 @@ class EntryList(APIView):
         # print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request):
-        # TODO
-        pass
-
 
 class EntryListByResource(APIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
