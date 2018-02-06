@@ -81,8 +81,11 @@ class EntryDetailByResource(APIView):
         for RESOURCE in RESOURCES:
             if resource in RESOURCE:
                 entries = Entry.objects.filter(data_resource=resource).filter(pdb_id=pdb_id)
-                serializer = EntrySerializer(entries, many=True)
-                return Response(serializer.data)
+                if entries:
+                    serializer = EntrySerializer(entries, many=True)
+                    return Response(serializer.data)
+                else:
+                    return Response("Entry not found", status=status.HTTP_404_NOT_FOUND)
         return Response("Invalid data resource", status=status.HTTP_400_BAD_REQUEST)
 
 
