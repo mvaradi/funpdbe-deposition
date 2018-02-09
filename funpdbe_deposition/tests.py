@@ -52,8 +52,12 @@ class MockData(object):
             ],
             "evidence_code_ontology": [
                 {
-                    "eco_term": "manually_curated",
-                    "eco_code": "ECO000042"
+                    "eco_term": "computational combinatorial evidence used in automatic assertion",
+                    "eco_code": "ECO:0000246"
+                },
+                {
+                    "eco_term": "computational evidence used in automatic assertion",
+                    "eco_code": "ECO:0000242"
                 }
             ]
         }
@@ -220,6 +224,38 @@ class ApiPostTests(TestCase):
         self.client.login(username='test', password='test')
         response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data=self.data.data)
         self.assertEqual(response.status_code, 201)
+        self.client.logout()
+        user.delete()
+        group.delete()
+
+    """
+    Test if POST works for a user who has permission to POST to a
+    specific resource but POSTs bad data
+    This should fail sith 400 (bad request)
+    """
+    def test_posting_with_permission_but_bad_data(self):
+        group = Group.objects.create(name="funsites")
+        user = User.objects.create_user('test', 'test@test.test', 'test')
+        group.user_set.add(user)
+        self.client.login(username='test', password='test')
+        response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data={})
+        self.assertEqual(response.status_code, 400)
+        self.client.logout()
+        user.delete()
+        group.delete()
+
+    """
+    Test if POST works for a user who has permission to POST to a
+    specific resource but POSTs partly bad data
+    This should fail sith 400 (bad request)
+    """
+    def test_posting_with_permission_but_semi_bad_data(self):
+        group = Group.objects.create(name="funsites")
+        user = User.objects.create_user('test', 'test@test.test', 'test')
+        group.user_set.add(user)
+        self.client.login(username='test', password='test')
+        response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data={"data_resource": "funsites"})
+        self.assertEqual(response.status_code, 400)
         self.client.logout()
         user.delete()
         group.delete()
