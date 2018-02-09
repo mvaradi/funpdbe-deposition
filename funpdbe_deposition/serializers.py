@@ -51,9 +51,17 @@ class SiteSerializer(serializers.ModelSerializer):
 
 
 class EntrySerializer(serializers.ModelSerializer):
+    """
+    This is the most complex of all serializers, mainly
+    because this is the entry point for POST calls to the API
+
+    The data coming in (request.data) is parsed and every sub-serializer
+    dependent on the main Entry model is called from here
+    """
     chains = ChainSerializer(many=True)
     sites = SiteSerializer(many=True)
     evidence_code_ontology = EvidenceCodeOntologySerializer(many=True)
+    # Owner is not used in authentication, it is only for identification
     owner = serializers.ReadOnlyField(source='owner.username')
 
     class Meta:
@@ -68,14 +76,17 @@ class EntrySerializer(serializers.ModelSerializer):
         ecos_data = validated_data.pop('evidence_code_ontology', None)
         entry = Entry.objects.create(**validated_data)
 
+        # If there is ECO data, it is looped and serialized
         if ecos_data:
             for eco_data in ecos_data:
                 EvidenceCodeOntology.objects.create(entry_ref=entry, **eco_data)
 
+        # If there are "sites", they are looped and serialized
         if sites_data:
             for site_data in sites_data:
                 Site.objects.create(entry_ref=entry, **site_data)
 
+        # Reminder on hierarchy: Entry > Chain > Residue > Site data
         if chains_data:
             for chain_data in chains_data:
                 residues_data = chain_data.pop('residues', None)
