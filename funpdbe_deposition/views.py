@@ -1,3 +1,4 @@
+import re
 from django.contrib.auth.models import User, Group
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,7 +10,6 @@ from funpdbe_deposition.models import Entry
 from funpdbe_deposition.models import RESOURCES
 from funpdbe_deposition.serializers import EntrySerializer
 from funpdbe_deposition.permissions import IsOwnerOrReadOnly
-import re
 
 
 class EntryList(APIView):
@@ -43,8 +43,10 @@ class EntryListByResource(APIView):
     def post(self, request, resource):
         for RESOURCE in RESOURCES:
             if resource in RESOURCE:
-                serializer = EntrySerializer(data=request.data)
-                resource_according_to_json = request.data["data_resource"]
+                try:
+                    resource_according_to_json = request.data["data_resource"]
+                except:
+                    return Response("Invalid JSON data - check against FunPDBe schema", status=status.HTTP_400_BAD_REQUEST)
                 if resource != resource_according_to_json:
                     return Response("User provided resource name and JSON does not match", status=status.HTTP_400_BAD_REQUEST)
                 user_groups = []
@@ -52,6 +54,10 @@ class EntryListByResource(APIView):
                     user_groups.append(str(group))
                 if resource not in user_groups:
                     return Response("User does not have permission to POST to this resource", status=status.HTTP_403_FORBIDDEN)
+                try:
+                    serializer = EntrySerializer(data=request.data)
+                except:
+                    return Response("Invalid JSON data - check against FunPDBe schema", status=status.HTTP_400_BAD_REQUEST)
                 if serializer.is_valid():
                     serializer.save(owner=self.request.user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
