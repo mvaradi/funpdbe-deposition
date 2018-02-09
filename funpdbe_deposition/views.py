@@ -9,15 +9,12 @@ from funpdbe_deposition.serializers import UserSerializer
 from funpdbe_deposition.models import Entry
 from funpdbe_deposition.models import RESOURCES
 from funpdbe_deposition.serializers import EntrySerializer
-from funpdbe_deposition.permissions import IsOwnerOrReadOnly
 
 
 class EntryList(APIView):
     """
     List all funsite entries, or post a new entry.
     """
-
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
 
     def get(self, request):
         entries = Entry.objects.all()
@@ -28,7 +25,8 @@ class EntryList(APIView):
 
 
 class EntryListByResource(APIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
     def get(self, request, resource):
         for RESOURCE in RESOURCES:
@@ -66,7 +64,7 @@ class EntryListByResource(APIView):
 
 
 class EntryDetail(APIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
     def get(self, request, pdb_id):
         if not re.match("^[0-9][A-Za-z][A-Za-z0-9]{2}$", pdb_id):
@@ -79,7 +77,7 @@ class EntryDetail(APIView):
 
 
 class EntryDetailByResource(APIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
     def get(self, request, resource, pdb_id):
         if not re.match("^[0-9][A-Za-z][A-Za-z0-9]{2}$", pdb_id):
