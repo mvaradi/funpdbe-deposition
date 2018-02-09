@@ -4,7 +4,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
-from rest_framework import permissions
 from funpdbe_deposition.serializers import UserSerializer
 from funpdbe_deposition.models import Entry
 from funpdbe_deposition.models import RESOURCES
@@ -13,10 +12,17 @@ from funpdbe_deposition.serializers import EntrySerializer
 
 class EntryList(APIView):
     """
-    List all funsite entries, or post a new entry.
+    This is the basic view which can list (GET) all entries
     """
 
     def get(self, request):
+        """
+        This GET view can:
+        * work OK (200)
+        * fail with not found (404) when there are no entries at all
+        :param request: Request
+        :return: Response
+        """
         entries = Entry.objects.all()
         if not entries:
             return Response("No entries found", status=status.HTTP_404_NOT_FOUND)
@@ -25,10 +31,21 @@ class EntryList(APIView):
 
 
 class EntryListByResource(APIView):
-
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
+    """
+    These views either list entries belonging to a resource (GET), or add new entries
+    under one resource (POST)
+    """
 
     def get(self, request, resource):
+        """
+        This view can:
+        * work OK (200)
+        * fail with not found (404) when there are no entries for a resource
+        * fail with bad request (400) when the resource name is invalid
+        :param request: Request
+        :param resource: String, resource name provided by the user
+        :return: Response
+        """
         for RESOURCE in RESOURCES:
             if resource in RESOURCE:
                 entries = Entry.objects.filter(data_resource=resource)
@@ -39,6 +56,17 @@ class EntryListByResource(APIView):
         return Response("Invalid data resource", status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, resource):
+        """
+        This view can:
+        * create entry (201)
+        * fail with bad request (400) when the JSON is invalid
+        * fail with bad request (400) when the resource name provided and resource name in JSON mismatch
+        * fail with forbidden (403) when user is anonymous or is not allowed to POST to a resource
+        * fail with bad request (400) when the resource name is invalid
+        :param request: Request
+        :param resource: Resource
+        :return:
+        """
         for RESOURCE in RESOURCES:
             if resource in RESOURCE:
                 try:
@@ -63,10 +91,21 @@ class EntryListByResource(APIView):
         return Response("Invalid data resource", status=status.HTTP_400_BAD_REQUEST)
 
 
-class EntryDetail(APIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
+class EntryListByPdb(APIView):
+    """
+    This view (only GET) can list entries for a specific PDB id
+    """
 
     def get(self, request, pdb_id):
+        """
+        This view can:
+        * work OK (200)
+        * fail with bad request (400) when the PDB id has an invalid reg.ex. pattern
+        * fail with not found (404)
+        :param request: Request
+        :param pdb_id: String, pattern: ^[0-9][A-Za-z][A-Za-z0-9]{2}$
+        :return: Response
+        """
         if not re.match("^[0-9][A-Za-z][A-Za-z0-9]{2}$", pdb_id):
             return Response("Invalid PDB id pattern", status=status.HTTP_400_BAD_REQUEST)
         entries = Entry.objects.filter(pdb_id=pdb_id.lower())
@@ -77,9 +116,23 @@ class EntryDetail(APIView):
 
 
 class EntryDetailByResource(APIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
+    """
+    These views either display one specific entry based on resource name
+    and PDB id (GET), or remove one specific entry (DELETE)
+    """
 
     def get(self, request, resource, pdb_id):
+        """
+        This view can:
+        * work OK (200)
+        * fail with bad request (400) when the PDB id has an invalid reg.ex. pattern
+        * fail with bad request (400) when the resource name is invalid
+        * fail with not found (404)
+        :param request: Request
+        :param resource: String, resource name provided by the user
+        :param pdb_id: String, pattern: ^[0-9][A-Za-z][A-Za-z0-9]{2}$
+        :return: Response
+        """
         if not re.match("^[0-9][A-Za-z][A-Za-z0-9]{2}$", pdb_id):
             return Response("Invalid PDB id pattern", status=status.HTTP_400_BAD_REQUEST)
         for RESOURCE in RESOURCES:
@@ -93,6 +146,18 @@ class EntryDetailByResource(APIView):
         return Response("Invalid data resource", status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, resource, pdb_id):
+        """
+        This view can:
+        * delete an entry (301)
+        * fail with bad request (400) when the PDB id has an invalid reg.ex. pattern
+        * fail with bad request (400) when the resource name is invalid
+        * fail with not found (404)
+        * fail with forbidden (403) when user is anonymous or has no permission to remove this entry
+        :param request: Request
+        :param resource: String, resource name provided by the user
+        :param pdb_id: String, pattern: ^[0-9][A-Za-z][A-Za-z0-9]{2}$
+        :return: Response
+        """
         if not re.match("[0-9][A-Za-z][A-Za-z0-9]", pdb_id):
             return Response("Invalid PDB id pattern", status=status.HTTP_400_BAD_REQUEST)
         for RESOURCE in RESOURCES:
@@ -111,13 +176,3 @@ class EntryDetailByResource(APIView):
                 else:
                     return Response("Entry not found", status=status.HTTP_404_NOT_FOUND)
         return Response("Invalid data resource", status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserList(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class UserDetail(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
