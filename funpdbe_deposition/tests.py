@@ -388,3 +388,112 @@ class ApiDeleteTests(TestCase):
         response = self.client.delete("/funpdbe_deposition/entries/resource/invalid/0x00/")
         self.assertEqual(response.status_code, 400)
         self.client.logout()
+
+
+class ApiPutTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.group = Group.objects.create(name="funsites")
+        self.user = User.objects.create_user("test", "test@test.test", "test")
+        self.group.user_set.add(self.user)
+        self.entry = Entry.objects.create(owner_id=1, pdb_id="2abc", data_resource="funsites")
+        self.data = MockData()
+
+    """
+    Test if DELETE&POST works when user logged in and permitted
+    This should succeed with 201 (created)
+    """
+    def test_updating(self):
+        self.client.login(username='test', password='test')
+        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data=self.data.data)
+        self.assertEqual(response.status_code, 201)
+        self.client.logout()
+
+    """
+    Test if DELETE&POST works when user is not logged in
+    This should fail with 403 (forbidden)
+    """
+    def test_updating_when_not_logged_in(self):
+        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data=self.data.data)
+        self.assertEqual(response.status_code, 403)
+
+    """
+    Test if DELETE&POST works when user is logged in but not permitted
+    This should fail with 403 (forbidden)
+    """
+    def test_updating_when_not_allowed(self):
+        group2 = Group.objects.create(name="nod")
+        user2 = User.objects.create_user("test2", "test2@test.test", "test2")
+        group2.user_set.add(user2)
+        self.client.login(username='test2', password='test2')
+        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data=self.data.data)
+        self.assertEqual(response.status_code, 403)
+        self.client.logout()
+
+    """
+    Test if DELETE&POST works when user is logged in and permitted,
+    but not the owner
+    This should succeed with 201 (created)
+    """
+    def test_updating_with_permission_but_not_owner(self):
+        user2 = User.objects.create_user("test2", "test2@test.test", "test2")
+        self.group.user_set.add(user2)
+        self.client.login(username='test2', password='test2')
+        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data=self.data.data)
+        self.assertEqual(response.status_code, 201)
+        self.client.logout()
+
+    """
+    Test if DELETE&POST works when PDB id in invalid
+    This should fail with 400 (bad request)
+    """
+    def test_updating_with_invalid_pdb(self):
+        self.client.login(username='test', password='test')
+        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/invalid/', data=self.data.data)
+        self.assertEqual(response.status_code, 400)
+        self.client.logout()
+
+    """
+    Test if DELETE&POST works when entry does not exist
+    This should fail with 404 (not found)
+    """
+    def test_updating_entry_not_existing(self):
+        self.client.login(username='test', password='test')
+        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/1abc/', data=self.data.data)
+        self.assertEqual(response.status_code, 404)
+        self.client.logout()
+
+    """
+    Test if DELETE&POST works when JSON is bad
+    This should fail with 400 (bad request)
+    """
+    def test_updating_bad_json(self):
+        self.client.login(username='test', password='test')
+        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data={})
+        self.assertEqual(response.status_code, 400)
+        self.client.logout()
+
+    """
+    Test if DELETE&POST works when JSON is partially bad
+    This should fail with 400 (bad request)
+    """
+    def test_updating_partly_bad_json(self):
+        self.client.login(username='test', password='test')
+        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data={"data_resource":"funsites"})
+        self.assertEqual(response.status_code, 400)
+        self.client.logout()
+
+    """
+    Test if DELETE&POST works when the resource name in the JSON
+    does not match with the user provided resource name
+    This should fail with 400 (bad request)
+    """
+    def test_updating_when_json_mismatched(self):
+        Entry.objects.create(owner_id=1, pdb_id="2abc", data_resource="nod")
+        group2 = Group.objects.create(name="nod")
+        group2.user_set.add(self.user)
+        self.client.login(username='test', password='test')
+        response = self.client.post('/funpdbe_deposition/entries/resource/nod/2abc/', data=self.data.data)
+        self.assertEqual(response.status_code, 400)
+        self.client.logout()
