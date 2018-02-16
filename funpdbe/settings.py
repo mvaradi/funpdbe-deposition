@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
-from funpdbe.config import MASTER
+# from funpdbe.config import MASTER
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,7 +20,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
-SECRET_KEY = MASTER
+# SECRET_KEY = MASTER
+SECRET_KEY = "temporary_key"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
