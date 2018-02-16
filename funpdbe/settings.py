@@ -12,15 +12,15 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from funpdbe.config import MASTER
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
+# TODO - Change settings prior to production
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ii9074%b+g8-878yql*@6!$t-(nwnduvp9bu&_wh^h23!-so-9'
+SECRET_KEY = MASTER
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
