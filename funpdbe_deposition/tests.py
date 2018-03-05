@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import json
 from django.test import TestCase
 from django.test import Client
 from django.contrib.auth.models import User
@@ -184,12 +185,24 @@ class ApiPostTests(TestCase):
         self.client = Client()
         self.data = MockData()
 
+    def generic_user_setup(self, resource):
+        group = Group.objects.create(name=resource)
+        user = User.objects.create_user('test', 'test@test.test', 'test')
+        group.user_set.add(user)
+        self.client.login(username='test', password='test')
+
+    def generic_post_test(self, resource, url, code):
+        self.generic_user_setup(resource)
+        response = self.client.post(url, json.dumps(self.data.data), content_type="application/json")
+        self.assertEqual(response.status_code, code)
+
     """
     Test if POST is allowed without providing user login information
     This should fail with 403 (forbidden)
     """
     def test_posting_without_login(self):
-        response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data=self.data.data)
+        url = "/funpdbe_deposition/entries/resource/funsites/"
+        response = self.client.post(url, json.dumps(self.data.data), content_type="application/json")
         self.assertEqual(response.status_code, 403)
 
     """
@@ -203,14 +216,9 @@ class ApiPostTests(TestCase):
     def test_posting_without_permission(self):
         user = User.objects.create_user('test', 'test@test.test', 'test')
         self.client.login(username='test', password='test')
-        response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data=self.data.data)
+        url = "/funpdbe_deposition/entries/resource/funsites/"
+        response = self.client.post(url, json.dumps(self.data.data), content_type="application/json")
         self.assertEqual(response.status_code, 403)
-
-    def generic_post_setup(self, resource):
-        group = Group.objects.create(name=resource)
-        user = User.objects.create_user('test', 'test@test.test', 'test')
-        group.user_set.add(user)
-        self.client.login(username='test', password='test')
 
     """
     Test if POST works for a user who has permission to POST to a
@@ -218,9 +226,7 @@ class ApiPostTests(TestCase):
     This should succeed with 201 (created)
     """
     def test_posting_with_permission(self):
-        self.generic_post_setup("funsites")
-        response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data=self.data.data)
-        self.assertEqual(response.status_code, 201)
+        self.generic_post_test("funsites", "/funpdbe_deposition/entries/resource/funsites/", 201)
 
     """
     Test if POST works for a user who has permission to POST to a
@@ -228,12 +234,8 @@ class ApiPostTests(TestCase):
     This should fail sith 400 (bad request)
     """
     def test_posting_with_permission_but_bad_data(self):
-        group = Group.objects.create(name="funsites")
-        user = User.objects.create_user('test', 'test@test.test', 'test')
-        group.user_set.add(user)
-        self.client.login(username='test', password='test')
-        response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data={})
-        self.assertEqual(response.status_code, 400)
+        self.data.data = {}
+        self.generic_post_test("funsites", "/funpdbe_deposition/entries/resource/funsites/", 400)
 
     """
     Test if POST works for a user who has permission to POST to a
@@ -241,12 +243,8 @@ class ApiPostTests(TestCase):
     This should fail sith 400 (bad request)
     """
     def test_posting_with_permission_but_semi_bad_data(self):
-        group = Group.objects.create(name="funsites")
-        user = User.objects.create_user('test', 'test@test.test', 'test')
-        group.user_set.add(user)
-        self.client.login(username='test', password='test')
-        response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data={"data_resource": "funsites"})
-        self.assertEqual(response.status_code, 400)
+        self.data.data = {"data_resource": "funsites"}
+        self.generic_post_test("funsites", "/funpdbe_deposition/entries/resource/funsites/", 400)
 
     """
     Test if POST works for a permitted user who sends data where the resource
@@ -254,9 +252,7 @@ class ApiPostTests(TestCase):
     This should fail with 400 (bad request)
     """
     def test_posting_with_permission_but_resource_mismatch(self):
-        self.generic_post_setup("nod")
-        response = self.client.post("/funpdbe_deposition/entries/resource/nod/", data=self.data.data)
-        self.assertEqual(response.status_code, 400)
+        self.generic_post_test("nod", "/funpdbe_deposition/entries/resource/nod/", 400)
 
     """
     Test if POST works for a permitted user who sends data that is
@@ -264,12 +260,10 @@ class ApiPostTests(TestCase):
     This should fail with 400 (bad request)
     """
     def test_posting_with_permission_but_entry_is_there_already(self):
-        group = Group.objects.create(name="funsites")
-        user = User.objects.create_user('test', 'test@test.test', 'test')
-        group.user_set.add(user)
-        self.client.login(username='test', password='test')
-        self.client.post("/funpdbe_deposition/entries/resource/funsites/", data=self.data.data)
-        response_2 = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data=self.data.data)
+        self.generic_user_setup("funsites")
+        url = "/funpdbe_deposition/entries/resource/funsites/"
+        self.client.post(url, json.dumps(self.data.data), content_type="application/json")
+        response_2 = self.client.post(url, json.dumps(self.data.data), content_type="application/json")
         self.assertEqual(response_2.status_code, 400)
 
     """
@@ -278,9 +272,7 @@ class ApiPostTests(TestCase):
     This should fail with 400 (bad request)
     """
     def test_posting_with_invalid_resource_name(self):
-        self.generic_post_setup("foo")
-        response = self.client.post("/funpdbe_deposition/entries/resource/foo/", data=self.data.data)
-        self.assertEqual(response.status_code, 400)
+        self.generic_post_test("foo", "/funpdbe_deposition/entries/resource/foo/", 400)
 
 
 class ApiDeleteTests(TestCase):
