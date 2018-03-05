@@ -6,6 +6,7 @@ from django.test import Client
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from funpdbe_deposition.models import Entry
+from funpdbe_deposition.apps import FunpdbeDepositionConfig
 
 
 class MockData(object):
@@ -363,7 +364,7 @@ class ApiPutTests(TestCase):
 
     def generic_put_test(self, url, code):
         self.client.login(username='test', password='test')
-        response = self.client.post(url, data=self.data.data)
+        response = self.client.post(url, json.dumps(self.data.data), content_type="application/json")
         self.assertEqual(response.status_code, code)
 
     """
@@ -378,7 +379,7 @@ class ApiPutTests(TestCase):
     This should fail with 403 (forbidden)
     """
     def test_updating_when_not_logged_in(self):
-        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data=self.data.data)
+        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', json.dumps(self.data.data), content_type="application/json")
         self.assertEqual(response.status_code, 403)
 
     """
@@ -390,7 +391,8 @@ class ApiPutTests(TestCase):
         user2 = User.objects.create_user("test2", "test2@test.test", "test2")
         group2.user_set.add(user2)
         self.client.login(username='test2', password='test2')
-        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data=self.data.data)
+        url = '/funpdbe_deposition/entries/resource/funsites/2abc/'
+        response = self.client.post(url, json.dumps(self.data.data), content_type="application/json")
         self.assertEqual(response.status_code, 403)
 
     """
@@ -402,7 +404,8 @@ class ApiPutTests(TestCase):
         user2 = User.objects.create_user("test2", "test2@test.test", "test2")
         self.group.user_set.add(user2)
         self.client.login(username='test2', password='test2')
-        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data=self.data.data)
+        url = '/funpdbe_deposition/entries/resource/funsites/2abc/'
+        response = self.client.post(url, json.dumps(self.data.data), content_type="application/json")
         self.assertEqual(response.status_code, 201)
 
     """
@@ -452,3 +455,9 @@ class ApiPutTests(TestCase):
         group2 = Group.objects.create(name="nod")
         group2.user_set.add(self.user)
         self.generic_put_test('/funpdbe_deposition/entries/resource/nod/2abc/', 400)
+
+
+class TestConfig(TestCase):
+
+    def test_config(self):
+        self.assertEqual(FunpdbeDepositionConfig.name, "funpdbe_deposition")
