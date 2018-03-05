@@ -377,15 +377,17 @@ class ApiPutTests(TestCase):
         self.entry = Entry.objects.create(owner_id=1, pdb_id="2abc", data_resource="funsites")
         self.data = MockData()
 
+    def generic_put_test(self, url, code):
+        self.client.login(username='test', password='test')
+        response = self.client.post(url, data=self.data.data)
+        self.assertEqual(response.status_code, code)
+
     """
     Test if DELETE&POST works when user logged in and permitted
     This should succeed with 201 (created)
     """
     def test_updating(self):
-        self.client.login(username='test', password='test')
-        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data=self.data.data)
-        self.assertEqual(response.status_code, 201)
-        self.client.logout()
+        self.generic_put_test('/funpdbe_deposition/entries/resource/funsites/2abc/', 201)
 
     """
     Test if DELETE&POST works when user is not logged in
@@ -426,50 +428,37 @@ class ApiPutTests(TestCase):
     This should fail with 400 (bad request)
     """
     def test_updating_with_invalid_pdb(self):
-        self.client.login(username='test', password='test')
-        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/invalid/', data=self.data.data)
-        self.assertEqual(response.status_code, 400)
-        self.client.logout()
+        self.generic_put_test('/funpdbe_deposition/entries/resource/funsites/invalid/', 400)
 
     """
     Test if DELETE&POST works when entry does not exist
     This should fail with 404 (not found)
     """
     def test_updating_entry_not_existing(self):
-        self.client.login(username='test', password='test')
-        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/1abc/', data=self.data.data)
-        self.assertEqual(response.status_code, 404)
-        self.client.logout()
+        self.generic_put_test('/funpdbe_deposition/entries/resource/funsites/1abc/', 404)
 
     """
     Test if DELETE&POST works when resource name in invalid
     This should fail with 400 (bad request)
     """
     def test_updating_with_invalid_resource(self):
-        self.client.login(username='test', password='test')
-        response = self.client.post('/funpdbe_deposition/entries/resource/foo/1abc/', data=self.data.data)
-        self.assertEqual(response.status_code, 400)
-        self.client.logout()
+        self.generic_put_test('/funpdbe_deposition/entries/resource/foo/1abc/', 400)
 
     """
     Test if DELETE&POST works when JSON is bad
     This should fail with 400 (bad request)
     """
     def test_updating_bad_json(self):
-        self.client.login(username='test', password='test')
-        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data={})
-        self.assertEqual(response.status_code, 400)
-        self.client.logout()
+        self.data.data = {}
+        self.generic_put_test('/funpdbe_deposition/entries/resource/funsites/2abc/', 400)
 
     """
     Test if DELETE&POST works when JSON is partially bad
     This should fail with 400 (bad request)
     """
     def test_updating_partly_bad_json(self):
-        self.client.login(username='test', password='test')
-        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data={"data_resource":"funsites"})
-        self.assertEqual(response.status_code, 400)
-        self.client.logout()
+        self.data.data = {"data_resource":"funsites"}
+        self.generic_put_test('/funpdbe_deposition/entries/resource/funsites/2abc/', 400)
 
     """
     Test if DELETE&POST works when the resource name in the JSON
@@ -480,7 +469,4 @@ class ApiPutTests(TestCase):
         Entry.objects.create(owner_id=1, pdb_id="2abc", data_resource="nod")
         group2 = Group.objects.create(name="nod")
         group2.user_set.add(self.user)
-        self.client.login(username='test', password='test')
-        response = self.client.post('/funpdbe_deposition/entries/resource/nod/2abc/', data=self.data.data)
-        self.assertEqual(response.status_code, 400)
-        self.client.logout()
+        self.generic_put_test('/funpdbe_deposition/entries/resource/nod/2abc/', 400)
