@@ -86,10 +86,7 @@ class EntryListByResource(APIView):
                     user_groups.append(str(group))
                 if resource not in user_groups:
                     return RESPONSES["no create permission"]
-                try:
-                    serializer = EntrySerializer(data=request.data)
-                except:
-                    return Response("Invalid JSON data - check against FunPDBe schema", status=status.HTTP_400_BAD_REQUEST)
+                serializer = EntrySerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save(owner=self.request.user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -238,10 +235,7 @@ class EntryDetailByResource(APIView):
                     resource_according_to_json = request.data["data_resource"]
                     if resource != resource_according_to_json:
                         return Response("User provided resource name and JSON does not match", status=status.HTTP_400_BAD_REQUEST)
-                    try:
-                        serializer = EntrySerializer(data=request.data)
-                    except:
-                        return Response("Invalid JSON data - check against FunPDBe schema", status=status.HTTP_400_BAD_REQUEST)
+                    serializer = EntrySerializer(data=request.data)
                     if serializer.is_valid():
                         serializer.save(owner=self.request.user)
                         return Response(serializer.data, status=status.HTTP_201_CREATED)

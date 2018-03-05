@@ -389,6 +389,15 @@ class ApiDeleteTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.client.logout()
 
+    """
+    Test if DELETE works when PDB id in invalid
+    This should fail with 400 (bad request)
+    """
+    def test_deleting_when_pdb_id_is_invalid(self):
+        self.client.login(username='test', password='test')
+        response = self.client.delete("/funpdbe_deposition/entries/resource/funsites/9999/")
+        self.assertEqual(response.status_code, 400)
+        self.client.logout()
 
 class ApiPutTests(TestCase):
 
@@ -462,6 +471,16 @@ class ApiPutTests(TestCase):
         self.client.login(username='test', password='test')
         response = self.client.post('/funpdbe_deposition/entries/resource/funsites/1abc/', data=self.data.data)
         self.assertEqual(response.status_code, 404)
+        self.client.logout()
+
+    """
+    Test if DELETE&POST works when resource name in invalid
+    This should fail with 400 (bad request)
+    """
+    def test_updating_with_invalid_resource(self):
+        self.client.login(username='test', password='test')
+        response = self.client.post('/funpdbe_deposition/entries/resource/foo/1abc/', data=self.data.data)
+        self.assertEqual(response.status_code, 400)
         self.client.logout()
 
     """
