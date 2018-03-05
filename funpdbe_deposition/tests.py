@@ -295,6 +295,11 @@ class ApiDeleteTests(TestCase):
         self.group.user_set.add(self.user)
         self.entry = Entry.objects.create(owner_id=1, pdb_id="0x00", data_resource="funsites")
 
+    def generic_delete_test(self, url, code):
+        self.client.login(username='test', password='test')
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, code)
+
     """
     Test if DELETE works for anonymous user
     This should fail with 403 (forbidden)
@@ -312,17 +317,13 @@ class ApiDeleteTests(TestCase):
         self.client.login(username='test2', password='test2')
         response = self.client.delete("/funpdbe_deposition/entries/resource/funsites/0x00/")
         self.assertEqual(response.status_code, 403)
-        self.client.logout()
 
     """
     Test if DELETE works for permitted user
     This should succeed with 301 (permanently moved)
     """
     def test_deleting_with_permission(self):
-        self.client.login(username='test', password='test')
-        response = self.client.delete("/funpdbe_deposition/entries/resource/funsites/0x00/")
-        self.assertEqual(response.status_code, 301)
-        self.client.logout()
+        self.generic_delete_test('/funpdbe_deposition/entries/resource/funsites/0x00/', 301)
 
     """
     Test if DELETE works for permitted user, who is different
@@ -335,37 +336,28 @@ class ApiDeleteTests(TestCase):
         self.client.login(username='test2', password='test2')
         response = self.client.delete("/funpdbe_deposition/entries/resource/funsites/0x00/")
         self.assertEqual(response.status_code, 301)
-        self.client.logout()
 
     """
     Test if DELETE works when entry does not exist
     this should fail with 404 (not found)
     """
     def test_deleting_when_entry_is_not_there(self):
-        self.client.login(username='test', password='test')
-        response = self.client.delete("/funpdbe_deposition/entries/resource/funsites/0x42/")
-        self.assertEqual(response.status_code, 404)
-        self.client.logout()
+        self.generic_delete_test('/funpdbe_deposition/entries/resource/funsites/0x42/', 404)
 
     """
     Test if DELETE works when resource name is invalid
     This should fail with 400 (bad request)
     """
     def test_deleting_when_resource_is_invalid(self):
-        self.client.login(username='test', password='test')
-        response = self.client.delete("/funpdbe_deposition/entries/resource/invalid/0x00/")
-        self.assertEqual(response.status_code, 400)
-        self.client.logout()
+        self.generic_delete_test('/funpdbe_deposition/entries/resource/invalid/0x00/', 400)
 
     """
     Test if DELETE works when PDB id in invalid
     This should fail with 400 (bad request)
     """
     def test_deleting_when_pdb_id_is_invalid(self):
-        self.client.login(username='test', password='test')
-        response = self.client.delete("/funpdbe_deposition/entries/resource/funsites/9999/")
-        self.assertEqual(response.status_code, 400)
-        self.client.logout()
+        self.generic_delete_test('/funpdbe_deposition/entries/resource/funsites/9999/', 400)
+
 
 class ApiPutTests(TestCase):
 
@@ -408,7 +400,6 @@ class ApiPutTests(TestCase):
         self.client.login(username='test2', password='test2')
         response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data=self.data.data)
         self.assertEqual(response.status_code, 403)
-        self.client.logout()
 
     """
     Test if DELETE&POST works when user is logged in and permitted,
@@ -421,7 +412,6 @@ class ApiPutTests(TestCase):
         self.client.login(username='test2', password='test2')
         response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', data=self.data.data)
         self.assertEqual(response.status_code, 201)
-        self.client.logout()
 
     """
     Test if DELETE&POST works when PDB id in invalid
