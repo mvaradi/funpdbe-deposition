@@ -14,6 +14,32 @@ RESPONSES = {
     "no create permission": Response("User does not have permission to PUT for this resource", status=status.HTTP_403_FORBIDDEN)
 }
 
+
+def get_existing_entry(entry):
+    if not entry:
+        return RESPONSES["no entries"]
+    else:
+        return serialize(entry)
+
+
+def serialize(entry):
+    serializer = EntrySerializer(entry, many=True)
+    return Response(serializer.data)
+
+
+def resource_valid(resource):
+    for RESOURCE in RESOURCES:
+        if resource in RESOURCE:
+            return True
+    return False
+
+
+def pdb_id_valid(pdb_id):
+    if re.match(PDB_PATTERN, pdb_id):
+        return True
+    return False
+
+
 class EntryList(APIView):
     """
     This is the basic view which can list (GET) all entries
@@ -28,10 +54,7 @@ class EntryList(APIView):
         :return: Response
         """
         entries = Entry.objects.all()
-        if not entries:
-            return RESPONSES["no entries"]
-        serializer = EntrySerializer(entries, many=True)
-        return Response(serializer.data)
+        return get_existing_entry(entries)
 
 
 class EntryListByResource(APIView):
@@ -50,15 +73,14 @@ class EntryListByResource(APIView):
         :param resource: String, resource name provided by the user
         :return: Response
         """
+
         # Check if resource is a valid resource name
-        for RESOURCE in RESOURCES:
-            if resource in RESOURCE:
-                entries = Entry.objects.filter(data_resource=resource)
-                if not entries:
-                    return RESPONSES["no entries"]
-                serializer = EntrySerializer(entries, many=True)
-                return Response(serializer.data)
-        return RESPONSES["invalid resource"]
+        if resource_valid(resource):
+            entries = Entry.objects.filter(data_resource=resource)
+            response = get_existing_entry(entries)
+        else:
+            response = RESPONSES["invalid resource"]
+        return response
 
     def post(self, request, resource):
         """
@@ -86,10 +108,7 @@ class EntryListByResource(APIView):
                     user_groups.append(str(group))
                 if resource not in user_groups:
                     return RESPONSES["no create permission"]
-                try:
-                    serializer = EntrySerializer(data=request.data)
-                except:
-                    return Response("Invalid JSON data - check against FunPDBe schema", status=status.HTTP_400_BAD_REQUEST)
+                serializer = EntrySerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save(owner=self.request.user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -112,16 +131,13 @@ class EntryListByPdb(APIView):
         :param pdb_id: String, pattern: ^[0-9][A-Za-z][A-Za-z0-9]{2}$
         :return: Response
         """
-
         # Try matching PDB id with reg.ex. pattern
-        if not re.match(PDB_PATTERN, pdb_id):
-            return RESPONSES["invalid pattern"]
-
-        entries = Entry.objects.filter(pdb_id=pdb_id.lower())
-        if not entries:
-            return RESPONSES["no entries"]
-        serializer = EntrySerializer(entries, many=True)
-        return Response(serializer.data)
+        if pdb_id_valid(pdb_id):
+            entries = Entry.objects.filter(pdb_id=pdb_id.lower())
+            response = get_existing_entry(entries)
+        else:
+            response = RESPONSES["invalid pattern"]
+        return response
 
 
 class EntryDetailByResource(APIView):
@@ -142,21 +158,18 @@ class EntryDetailByResource(APIView):
         :param pdb_id: String, pattern: ^[0-9][A-Za-z][A-Za-z0-9]{2}$
         :return: Response
         """
-
-        # Try matching PDB id with reg.ex. pattern
-        if not re.match(PDB_PATTERN, pdb_id):
-            return RESPONSES["invalid pattern"]
-
-        # Check if resource is a valid resource name
-        for RESOURCE in RESOURCES:
-            if resource in RESOURCE:
+        # Validate PDB id
+        if pdb_id_valid(pdb_id):
+            # Validate resource name
+            if resource_valid(resource):
                 entries = Entry.objects.filter(data_resource=resource).filter(pdb_id=pdb_id.lower())
-                if entries:
-                    serializer = EntrySerializer(entries, many=True)
-                    return Response(serializer.data)
-                else:
-                    return RESPONSES["no entries"]
-        return RESPONSES["invalid resource"]
+                # If entry/entries exist, serialize them
+                response = get_existing_entry(entries)
+            else:
+                response = RESPONSES["invalid resource"]
+        else:
+            response = RESPONSES["invalid pattern"]
+        return response
 
     def delete(self, request, resource, pdb_id):
         """
@@ -238,10 +251,7 @@ class EntryDetailByResource(APIView):
                     resource_according_to_json = request.data["data_resource"]
                     if resource != resource_according_to_json:
                         return Response("User provided resource name and JSON does not match", status=status.HTTP_400_BAD_REQUEST)
-                    try:
-                        serializer = EntrySerializer(data=request.data)
-                    except:
-                        return Response("Invalid JSON data - check against FunPDBe schema", status=status.HTTP_400_BAD_REQUEST)
+                    serializer = EntrySerializer(data=request.data)
                     if serializer.is_valid():
                         serializer.save(owner=self.request.user)
                         return Response(serializer.data, status=status.HTTP_201_CREATED)
