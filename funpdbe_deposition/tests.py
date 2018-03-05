@@ -205,8 +205,12 @@ class ApiPostTests(TestCase):
         self.client.login(username='test', password='test')
         response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data=self.data.data)
         self.assertEqual(response.status_code, 403)
-        self.client.logout()
-        user.delete()
+
+    def generic_post_setup(self, resource):
+        group = Group.objects.create(name=resource)
+        user = User.objects.create_user('test', 'test@test.test', 'test')
+        group.user_set.add(user)
+        self.client.login(username='test', password='test')
 
     """
     Test if POST works for a user who has permission to POST to a
@@ -214,15 +218,9 @@ class ApiPostTests(TestCase):
     This should succeed with 201 (created)
     """
     def test_posting_with_permission(self):
-        group = Group.objects.create(name="funsites")
-        user = User.objects.create_user('test', 'test@test.test', 'test')
-        group.user_set.add(user)
-        self.client.login(username='test', password='test')
+        self.generic_post_setup("funsites")
         response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data=self.data.data)
         self.assertEqual(response.status_code, 201)
-        self.client.logout()
-        user.delete()
-        group.delete()
 
     """
     Test if POST works for a user who has permission to POST to a
@@ -236,9 +234,6 @@ class ApiPostTests(TestCase):
         self.client.login(username='test', password='test')
         response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data={})
         self.assertEqual(response.status_code, 400)
-        self.client.logout()
-        user.delete()
-        group.delete()
 
     """
     Test if POST works for a user who has permission to POST to a
@@ -252,9 +247,6 @@ class ApiPostTests(TestCase):
         self.client.login(username='test', password='test')
         response = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data={"data_resource": "funsites"})
         self.assertEqual(response.status_code, 400)
-        self.client.logout()
-        user.delete()
-        group.delete()
 
     """
     Test if POST works for a permitted user who sends data where the resource
@@ -262,16 +254,9 @@ class ApiPostTests(TestCase):
     This should fail with 400 (bad request)
     """
     def test_posting_with_permission_but_resource_mismatch(self):
-        group = Group.objects.create(name="nod")
-        user = User.objects.create_user('test', 'test@test.test', 'test')
-        group.user_set.add(user)
-        self.client.login(username='test', password='test')
+        self.generic_post_setup("nod")
         response = self.client.post("/funpdbe_deposition/entries/resource/nod/", data=self.data.data)
         self.assertEqual(response.status_code, 400)
-        self.client.logout()
-        user.delete()
-        group.delete()
-
 
     """
     Test if POST works for a permitted user who sends data that is
@@ -286,10 +271,6 @@ class ApiPostTests(TestCase):
         self.client.post("/funpdbe_deposition/entries/resource/funsites/", data=self.data.data)
         response_2 = self.client.post("/funpdbe_deposition/entries/resource/funsites/", data=self.data.data)
         self.assertEqual(response_2.status_code, 400)
-        self.client.logout()
-        user.delete()
-        group.delete()
-
 
     """
     Test if POST works for a user who provides invalid
@@ -297,15 +278,9 @@ class ApiPostTests(TestCase):
     This should fail with 400 (bad request)
     """
     def test_posting_with_invalid_resource_name(self):
-        group = Group.objects.create(name="foo")
-        user = User.objects.create_user('test', 'test@test.test', 'test')
-        group.user_set.add(user)
-        self.client.login(username='test', password='test')
+        self.generic_post_setup("foo")
         response = self.client.post("/funpdbe_deposition/entries/resource/foo/", data=self.data.data)
         self.assertEqual(response.status_code, 400)
-        self.client.logout()
-        user.delete()
-        group.delete()
 
 
 class ApiDeleteTests(TestCase):
