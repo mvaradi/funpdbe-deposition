@@ -11,8 +11,9 @@ GENERIC_RESPONSES = {
     "no entries": Response("No entries found", status=status.HTTP_404_NOT_FOUND),
     "invalid pattern": Response("Invalid PDB id pattern", status=status.HTTP_400_BAD_REQUEST),
     "invalid resource": Response("Invalid data resource", status=status.HTTP_400_BAD_REQUEST),
+    "invalid json": Response("Invalid JSON data - check your data structure", status=status.HTTP_400_BAD_REQUEST),
+    "resource name mismatch": Response("Resource name provided by user is different than in the JSON data", status=status.HTTP_400_BAD_REQUEST),
     "no permission": Response("User not allowed to perform this request", status=status.HTTP_403_FORBIDDEN),
-    "no create permission": Response("User does not have permission to PUT for this resource", status=status.HTTP_403_FORBIDDEN),
     "bad request": Response("PDB id or resource name invalid", status=status.HTTP_400_BAD_REQUEST)
 }
 
@@ -99,6 +100,39 @@ class EntryListByResource(APIView):
             response = GENERIC_RESPONSES["invalid resource"]
         return response
 
+    def has_resource(self, data):
+        try:
+            response = data["data_resource"]
+        except:
+            response = None
+        return response
+
+    def validate_data(self, request, resource):
+        if self.has_resource(request.data):
+            response = self.match_resource_name(request, resource)
+        else:
+            response = GENERIC_RESPONSES["invalid json"]
+        return response
+
+    def match_resource_name(self, request, resource):
+        if resource != request.data["data_resource"]:
+            response = GENERIC_RESPONSES["resource name mismatch"]
+        else:
+            if resource in user_groups(request.user):
+                response = self.serialize_for_post(request)
+            else:
+                response = GENERIC_RESPONSES["no permission"]
+        return response
+
+    def serialize_for_post(self, request):
+        serializer = EntrySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user)
+            response = Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            response = Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return response
+
     def post(self, request, resource):
         """
         This call can:
@@ -111,27 +145,11 @@ class EntryListByResource(APIView):
         :param resource: Resource
         :return:
         """
-        # Validate resource name
-
-        for RESOURCE in RESOURCES:
-            if resource in RESOURCE:
-                try:
-                    resource_according_to_json = request.data["data_resource"]
-                except:
-                    return Response("Invalid JSON data - check against FunPDBe schema", status=status.HTTP_400_BAD_REQUEST)
-                if resource != resource_according_to_json:
-                    return Response("User provided resource name and JSON does not match", status=status.HTTP_400_BAD_REQUEST)
-                user_groups = []
-                for group in request.user.groups.all():
-                    user_groups.append(str(group))
-                if resource not in user_groups:
-                    return GENERIC_RESPONSES["no create permission"]
-                serializer = EntrySerializer(data=request.data)
-                if serializer.is_valid():
-                    serializer.save(owner=self.request.user)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return GENERIC_RESPONSES["invalid resource"]
+        if resource_valid(resource):
+            return self.validate_data(request, resource)
+        else:
+            response = GENERIC_RESPONSES["invalid resource"]
+        return response
 
 
 class EntryListByPdb(APIView):
@@ -244,41 +262,8 @@ class EntryDetailByResource(APIView):
         :param pdb_id:
         :return:
         """
-
-        # Try matching PDB id with reg.ex. pattern
-        if not re.match(PDB_PATTERN, pdb_id):
-            return GENERIC_RESPONSES["invalid pattern"]
-
-        # Check if resource is a valid resource name
-        for RESOURCE in RESOURCES:
-            if resource in RESOURCE:
-                user = request.user
-                user_groups = []
-                for group in user.groups.all():
-                    user_groups.append(str(group))
-                # Check if user has permission to edit at this resource
-                if resource not in user_groups:
-                    return GENERIC_RESPONSES["no create permission"]
-
-                # First delete the entry (cascading)
-                entries = Entry.objects.filter(pdb_id=pdb_id.lower()).filter(data_resource=resource)
-                if entries:
-                    for entry in entries:
-                        entry.delete()
-                else:
-                    return GENERIC_RESPONSES["no entries"]
-
-                # Then try to create a new entry
-                try:
-                    resource_according_to_json = request.data["data_resource"]
-                    if resource != resource_according_to_json:
-                        return Response("User provided resource name and JSON does not match", status=status.HTTP_400_BAD_REQUEST)
-                    serializer = EntrySerializer(data=request.data)
-                    if serializer.is_valid():
-                        serializer.save(owner=self.request.user)
-                        return Response(serializer.data, status=status.HTTP_201_CREATED)
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                except:
-                    return Response("Invalid JSON data - check against FunPDBe schema", status=status.HTTP_400_BAD_REQUEST)
-
-        return GENERIC_RESPONSES["invalid resource"]
+        deleting = self.delete(request, resource, pdb_id)
+        if deleting.status_code == 301:
+            return EntryListByResource().post(request, resource)
+        else:
+            return deleting
