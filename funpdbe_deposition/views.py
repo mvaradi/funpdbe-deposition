@@ -189,6 +189,31 @@ class EntryDetailByResource(APIView):
             response = GENERIC_RESPONSES["invalid pattern"]
         return response
 
+    def validate(self, request, resource, pdb_id):
+        validated = False
+        if pdb_id_valid(pdb_id):
+            if resource_valid(resource):
+                validated = True
+
+        if validated:
+            response = self.authenticate(request.user, resource, pdb_id)
+        else:
+            response = GENERIC_RESPONSES["bad request"]
+
+        return response
+
+    def authenticate(self, user, resource, pdb_id):
+        if resource in user_groups(user):
+            entries = Entry.objects.filter(pdb_id=pdb_id.lower()).filter(data_resource=resource)
+            if delete_entries(entries):
+                response = Response("Deleted entry of %s with PDB id %s" % (user, pdb_id),
+                                    status=status.HTTP_301_MOVED_PERMANENTLY)
+            else:
+                response = GENERIC_RESPONSES["no entries"]
+        else:
+            response = GENERIC_RESPONSES["no permission"]
+        return response
+
     def delete(self, request, resource, pdb_id):
         """
         This call can:
@@ -202,24 +227,7 @@ class EntryDetailByResource(APIView):
         :param pdb_id: String, pattern: ^[0-9][A-Za-z][A-Za-z0-9]{2}$
         :return: Response
         """
-        validated = False
-        if pdb_id_valid(pdb_id):
-            if resource_valid(resource):
-                validated = True
-
-        if validated:
-            if resource in user_groups(request.user):
-                entries = Entry.objects.filter(pdb_id=pdb_id.lower()).filter(data_resource=resource)
-                if delete_entries(entries):
-                    response = Response("Deleted entry of %s with PDB id %s" % (request.user, pdb_id), status=status.HTTP_301_MOVED_PERMANENTLY)
-                else:
-                    response = GENERIC_RESPONSES["no entries"]
-            else:
-                response = GENERIC_RESPONSES["no permission"]
-        else:
-            response = GENERIC_RESPONSES["bad request"]
-
-        return response
+        return self.validate(request, resource, pdb_id)
 
     def post(self, request, resource, pdb_id):
         """
