@@ -22,6 +22,7 @@ CLASSIFICATION = (
     ("null", "null")
 )
 
+
 class Entry(models.Model):
     """
     Entry class for FunSites
