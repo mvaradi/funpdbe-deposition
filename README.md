@@ -3,6 +3,7 @@ FunPDBe Deposition System
 
 [![Build Status](https://travis-ci.org/funpdbe-consortium/funpdbe-deposition.svg?branch=master)](https://travis-ci.org/funpdbe-consortium/funpdbe-deposition)
 [![codecov](https://codecov.io/gh/funpdbe-consortium/funpdbe-deposition/branch/master/graph/badge.svg)](https://codecov.io/gh/funpdbe-consortium/funpdbe-deposition)
+[![Maintainability](https://api.codeclimate.com/v1/badges/3da9a340764fa8b0ccf1/maintainability)](https://codeclimate.com/github/funpdbe-consortium/funpdbe-deposition/maintainability)
 
 This repository is the code base for the FunPDBe deposition system.
 
