@@ -82,15 +82,15 @@ class EntrySerializer(serializers.ModelSerializer):
         Site.objects.create(entry_ref=entry, **site_data)
 
     def create_chains_or_residues(self, parent, data, label):
+        if label not in ["residues", "site_data"]:
+            return None
         popped = data.pop(label, None)
         if label == "residues":
             new_item = Chain.objects.create(entry_ref=parent, **data)
             to_call = self.create_residues_data
-        elif label == "site_data":
+        else:
             new_item = Residue.objects.create(chain_ref=parent, **data)
             to_call = self.create_site_details
-        else:
-            return None
         self.create_subsection(new_item, popped, to_call)
 
     def create_chains(self, entry, chain_data):
