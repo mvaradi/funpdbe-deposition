@@ -70,33 +70,29 @@ class EntrySerializer(serializers.ModelSerializer):
                   'resource_entry_url', 'release_date', 'chains', 'sites',
                   'evidence_code_ontology', 'owner')
 
-    def create_ecos(self, entry, ecos_data):
-        if ecos_data:
-            for eco_data in ecos_data:
-                EvidenceCodeOntology.objects.create(entry_ref=entry, **eco_data)
+    def create_subsection(self, parent, data, next_function):
+        if data:
+            for item in data:
+                next_function(parent, item)
 
-    def create_sites(self, entry, sites_data):
-        if sites_data:
-            for site_data in sites_data:
-                Site.objects.create(entry_ref=entry, **site_data)
+    def create_ecos(self, entry, eco_data):
+        EvidenceCodeOntology.objects.create(entry_ref=entry, **eco_data)
 
-    def create_chains(self, entry, chains_data):
-        if chains_data:
-            for chain_data in chains_data:
-                residues_data = chain_data.pop('residues', None)
-                chain = Chain.objects.create(entry_ref=entry, **chain_data)
-                self.create_residues_data(chain, residues_data)
+    def create_sites(self, entry, site_data):
+        Site.objects.create(entry_ref=entry, **site_data)
 
-    def create_residues_data(self, chain, residues_data):
-        if residues_data:
-            for residue_data in residues_data:
-                site_details = residue_data.pop('site_data', None)
-                residue = Residue.objects.create(chain_ref=chain, **residue_data)
-                self.create_site_details(residue, site_details)
+    def create_chains(self, entry, chain_data):
+        residues_data = chain_data.pop('residues', None)
+        chain = Chain.objects.create(entry_ref=entry, **chain_data)
+        self.create_subsection(chain, residues_data, self.create_residues_data)
 
-    def create_site_details(self, residue, site_details):
-        for site_detail in site_details:
-            SiteData.objects.create(residue_ref=residue, **site_detail)
+    def create_residues_data(self, chain, residue_data):
+        site_details = residue_data.pop('site_data', None)
+        residue = Residue.objects.create(chain_ref=chain, **residue_data)
+        self.create_subsection(residue, site_details, self.create_site_details)
+
+    def create_site_details(self, residue, site_detail):
+        SiteData.objects.create(residue_ref=residue, **site_detail)
 
     def create(self, validated_data):
         chains_data = validated_data.pop('chains', None)
@@ -104,8 +100,8 @@ class EntrySerializer(serializers.ModelSerializer):
         ecos_data = validated_data.pop('evidence_code_ontology', None)
         entry = Entry.objects.create(**validated_data)
 
-        self.create_ecos(entry, ecos_data)
-        self.create_sites(entry, sites_data)
-        self.create_chains(entry, chains_data)
+        self.create_subsection(entry, sites_data, self.create_sites)
+        self.create_subsection(entry, ecos_data, self.create_ecos)
+        self.create_subsection(entry, chains_data, self.create_chains)
 
         return entry
