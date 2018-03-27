@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
 class EvidenceCodeOntologySerializer(serializers.ModelSerializer):
     class Meta:
         model = EvidenceCodeOntology
-        fields = ['eco_term', 'eco_code']
+        fields = ('eco_term', 'eco_code')
 
 
 class SiteDataSerializer(serializers.ModelSerializer):
