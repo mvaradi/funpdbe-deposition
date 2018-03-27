@@ -38,7 +38,7 @@ def resource_valid(resource):
 
 
 def pdb_id_valid(pdb_id):
-    if re.match(PDB_PATTERN, pdb_id):
+    if pdb_id and re.match(PDB_PATTERN, pdb_id):
         return True
     return False
 
