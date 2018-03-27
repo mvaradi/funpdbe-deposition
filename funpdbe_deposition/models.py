@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 RESOURCES = (
-    ("funsites", "funsites"),
+    ("cath-funsites", "cath-funsites"),
     ("nod", "nod"),
     ("3dligandsite", "3dligandsite"),
     ("cansar", "cansar"),
