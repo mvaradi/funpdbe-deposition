@@ -5,12 +5,6 @@ from funpdbe_deposition.views import pdb_id_valid
 from funpdbe_deposition.views import GENERIC_RESPONSES, RESOURCES
 
 
-class MockEntry(object):
-
-    def delete(self):
-        pass
-
-
 class TestViewHelpers(TestCase):
 
     def test_get_existing_entry(self):
@@ -30,7 +24,3 @@ class TestViewHelpers(TestCase):
         self.assertFalse(pdb_id_valid("xxxx"))
         self.assertFalse(pdb_id_valid("0000"))
         self.assertFalse(pdb_id_valid(None))
-
-    def test_delete_entries(self):
-        self.assertTrue([MockEntry(), MockEntry()])
-        self.assertFalse(None)
