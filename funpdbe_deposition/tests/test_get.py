@@ -13,7 +13,7 @@ class ApiGetTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user("test", "test@test.test", "test")
-        self.entry = Entry.objects.create(owner_id=1, pdb_id="0x00", data_resource="funsites")
+        self.entry = Entry.objects.create(owner_id=1, pdb_id="0x00", data_resource="cath-funsites")
 
     def tearDown(self):
         User.objects.all().delete()
@@ -67,7 +67,7 @@ class ApiGetTests(TestCase):
     This should return 200
     """
     def test_getting_all_by_resource(self):
-        response = self.client.get("/funpdbe_deposition/entries/resource/funsites/")
+        response = self.client.get("/funpdbe_deposition/entries/resource/cath-funsites/")
         self.assertEqual(response.status_code, 200)
 
     """
@@ -75,14 +75,14 @@ class ApiGetTests(TestCase):
     This should return 404
     """
     def test_getting_all_by_resource_none(self):
-        self.generic_get_test("/funpdbe_deposition/entries/resource/funsites/")
+        self.generic_get_test("/funpdbe_deposition/entries/resource/cath-funsites/")
 
     """
     Test GET with PDB id and resource
     This should return 200
     """
     def test_getting_one_by_pdb_id_and_resource(self):
-        response = self.client.get("/funpdbe_deposition/entries/resource/funsites/0x00/")
+        response = self.client.get("/funpdbe_deposition/entries/resource/cath-funsites/0x00/")
         self.assertEqual(response.status_code, 200)
 
     """
@@ -90,7 +90,7 @@ class ApiGetTests(TestCase):
     This should return 404
     """
     def test_getting_one_by_pdb_id_and_resource_none(self):
-        self.generic_get_test("/funpdbe_deposition/entries/resource/funsites/0x00/")
+        self.generic_get_test("/funpdbe_deposition/entries/resource/cath-funsites/0x00/")
 
     """
     Test GET all by invalid resource
@@ -113,5 +113,5 @@ class ApiGetTests(TestCase):
     This should return 400 (bad request)
     """
     def test_getting_one_by_bad_pdb_id_and_resource(self):
-        response = self.client.get("/funpdbe_deposition/entries/resource/funsites/whatever/")
+        response = self.client.get("/funpdbe_deposition/entries/resource/cath-funsites/whatever/")
         self.assertEqual(response.status_code, 400)

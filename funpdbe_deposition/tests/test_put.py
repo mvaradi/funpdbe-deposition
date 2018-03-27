@@ -13,10 +13,10 @@ class ApiPutTests(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.group = Group.objects.create(name="funsites")
+        self.group = Group.objects.create(name="cath-funsites")
         self.user = User.objects.create_user("test", "test@test.test", "test")
         self.group.user_set.add(self.user)
-        self.entry = Entry.objects.create(owner_id=1, pdb_id="2abc", data_resource="funsites")
+        self.entry = Entry.objects.create(owner_id=1, pdb_id="2abc", data_resource="cath-funsites")
         self.data = MockData()
 
     def generic_put_test(self, url, code):
@@ -29,14 +29,14 @@ class ApiPutTests(TestCase):
     This should succeed with 201 (created)
     """
     def test_updating(self):
-        self.generic_put_test('/funpdbe_deposition/entries/resource/funsites/2abc/', 201)
+        self.generic_put_test('/funpdbe_deposition/entries/resource/cath-funsites/2abc/', 201)
 
     """
     Test if DELETE&POST works when user is not logged in
     This should fail with 403 (forbidden)
     """
     def test_updating_when_not_logged_in(self):
-        response = self.client.post('/funpdbe_deposition/entries/resource/funsites/2abc/', json.dumps(self.data.data), content_type="application/json")
+        response = self.client.post('/funpdbe_deposition/entries/resource/cath-funsites/2abc/', json.dumps(self.data.data), content_type="application/json")
         self.assertEqual(response.status_code, 403)
 
     """
@@ -48,7 +48,7 @@ class ApiPutTests(TestCase):
         user2 = User.objects.create_user("test2", "test2@test.test", "test2")
         group2.user_set.add(user2)
         self.client.login(username='test2', password='test2')
-        url = '/funpdbe_deposition/entries/resource/funsites/2abc/'
+        url = '/funpdbe_deposition/entries/resource/cath-funsites/2abc/'
         response = self.client.post(url, json.dumps(self.data.data), content_type="application/json")
         self.assertEqual(response.status_code, 403)
 
@@ -61,7 +61,7 @@ class ApiPutTests(TestCase):
         user2 = User.objects.create_user("test2", "test2@test.test", "test2")
         self.group.user_set.add(user2)
         self.client.login(username='test2', password='test2')
-        url = '/funpdbe_deposition/entries/resource/funsites/2abc/'
+        url = '/funpdbe_deposition/entries/resource/cath-funsites/2abc/'
         response = self.client.post(url, json.dumps(self.data.data), content_type="application/json")
         self.assertEqual(response.status_code, 201)
 
@@ -70,14 +70,14 @@ class ApiPutTests(TestCase):
     This should fail with 400 (bad request)
     """
     def test_updating_with_invalid_pdb(self):
-        self.generic_put_test('/funpdbe_deposition/entries/resource/funsites/invalid/', 400)
+        self.generic_put_test('/funpdbe_deposition/entries/resource/cath-funsites/invalid/', 400)
 
     """
     Test if DELETE&POST works when entry does not exist
     This should fail with 404 (not found)
     """
     def test_updating_entry_not_existing(self):
-        self.generic_put_test('/funpdbe_deposition/entries/resource/funsites/1abc/', 404)
+        self.generic_put_test('/funpdbe_deposition/entries/resource/cath-funsites/1abc/', 404)
 
     """
     Test if DELETE&POST works when resource name in invalid
@@ -92,15 +92,15 @@ class ApiPutTests(TestCase):
     """
     def test_updating_bad_json(self):
         self.data.data = {}
-        self.generic_put_test('/funpdbe_deposition/entries/resource/funsites/2abc/', 400)
+        self.generic_put_test('/funpdbe_deposition/entries/resource/cath-funsites/2abc/', 400)
 
     """
     Test if DELETE&POST works when JSON is partially bad
     This should fail with 400 (bad request)
     """
     def test_updating_partly_bad_json(self):
-        self.data.data = {"data_resource":"funsites"}
-        self.generic_put_test('/funpdbe_deposition/entries/resource/funsites/2abc/', 400)
+        self.data.data = {"data_resource":"cath-funsites"}
+        self.generic_put_test('/funpdbe_deposition/entries/resource/cath-funsites/2abc/', 400)
 
     """
     Test if DELETE&POST works when the resource name in the JSON

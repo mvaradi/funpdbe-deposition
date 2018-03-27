@@ -10,7 +10,7 @@ class MockData(object):
     @staticmethod
     def set_data():
         return {"pdb_id": "2abc",
-            "data_resource": "funsites",
+            "data_resource": "cath-funsites",
             "resource_version": "1.0.0",
             "software_version": "1.0.0",
             "resource_entry_url": "https://example.com/foo/bar",
