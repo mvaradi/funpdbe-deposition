@@ -98,7 +98,8 @@ class SiteData(models.Model):
                                     related_name="site_data",
                                     on_delete=models.CASCADE)
 
-    site_id_ref = models.IntegerField("Site JSON reference identifier")
+    site_id_ref = models.IntegerField("Site JSON reference identifier",
+                                      null=True)
 
     raw_score = models.FloatField("Value",
                               null=True)
